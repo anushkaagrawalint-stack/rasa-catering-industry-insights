@@ -1,7 +1,6 @@
 import 'server-only';
 import { cookies, headers } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { getDb } from './db';
 import { SESSION_COOKIE, verifySession, type Session } from './session';
 
 /** The signed-in user (admin or viewer), or null. */
@@ -21,22 +20,21 @@ export async function clientIp(): Promise<string> {
   return (h.get('x-forwarded-for')?.split(',')[0] || h.get('x-real-ip') || 'unknown').trim();
 }
 
-const WINDOW_MIN = 15;
+const WINDOW_MS = 15 * 60_000;
 const MAX_FAILS = 5;
+const failures = new Map<string, number[]>();
 
-/** Failed-attempt rate limit, stored in Postgres so it holds across serverless instances. */
+/** Failed-attempt rate limit, kept in memory. It is per server instance, so it slows guessing but is not a hard global limit. */
 export async function isRateLimited(bucket: string): Promise<boolean> {
-  const db = await getDb();
-  await db.query(`delete from login_attempts where attempted_at < now() - interval '1 day'`);
-  const [r] = await db.query<{ n: string }>(
-    `select count(*)::text as n from login_attempts where ip = $1 and attempted_at > now() - interval '${WINDOW_MIN} minutes'`, [bucket]);
-  return Number(r.n) >= MAX_FAILS;
+  const recent = (failures.get(bucket) ?? []).filter(t => Date.now() - t < WINDOW_MS);
+  if (recent.length) failures.set(bucket, recent); else failures.delete(bucket);
+  return recent.length >= MAX_FAILS;
 }
 
 export async function recordFailure(bucket: string) {
-  await (await getDb()).query('insert into login_attempts (ip) values ($1)', [bucket]);
+  failures.set(bucket, [...(failures.get(bucket) ?? []), Date.now()]);
 }
 
 export async function clearFailures(bucket: string) {
-  await (await getDb()).query('delete from login_attempts where ip = $1', [bucket]);
+  failures.delete(bucket);
 }

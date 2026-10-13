@@ -9,11 +9,9 @@ interface Props {
   data: SnapshotData;
   weeks: string[];
   abbrev: Record<string, string>;
-  /** Admins get an Admin button; other accounts never see the admin area. */
-  isAdmin: boolean;
 }
 
-export function Dashboard({ data, weeks, abbrev, isAdmin }: Props) {
+export function Dashboard({ data, weeks, abbrev }: Props) {
   const router = useRouter();
   const [agentName, setAgentName] = useState<string>('all');
   const engine = useRef<ReturnType<typeof createDashboard> | null>(null);
@@ -67,7 +65,6 @@ export function Dashboard({ data, weeks, abbrev, isAdmin }: Props) {
               {data.agents.map(a => <option key={a} value={a}>{a}</option>)}
             </select>
             <button className="themebtn" id="theme" onClick={toggleTheme} aria-label="Toggle light / dark theme">◐</button>
-            {isAdmin && <a className="btn" href="/admin">Admin</a>}
             <button className="btn" onClick={logout}>Log out</button>
           </div>
         </header>

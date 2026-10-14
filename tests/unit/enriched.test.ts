@@ -1,11 +1,12 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_CONFIG } from '@/lib/config';
 import { isEnrichedWorkbook, processEnriched } from '@/lib/pipeline/enriched';
 import { orderSummary } from '@/lib/metrics';
 
-const buf = readFileSync(path.resolve(__dirname, '../../data/week-2026-10-05.xlsx'));
+const dataDir = path.resolve(__dirname, '../../data');
+const buf = readFileSync(path.join(dataDir, readdirSync(dataDir).filter(f => f.endsWith('.xlsx')).sort()[0]));
 const r = processEnriched(buf, DEFAULT_CONFIG);
 
 describe('RASA_Dashboard_Data workbook', () => {
@@ -22,8 +23,8 @@ describe('RASA_Dashboard_Data workbook', () => {
   });
   it('has the expected totals', () => {
     const c = r.data!.meta.counts;
-    expect([c.ytdOrders, c.personal, c.identified, c.dials, c.weekOrders]).toEqual([479, 73, 406, 2333, 6]);
-    expect(c.weekValue).toBeCloseTo(2789.52, 2);
+    expect([c.ytdOrders, c.personal, c.identified, c.dials, c.weekOrders]).toEqual([497, 76, 421, 2333, 7]);
+    expect(c.weekValue).toBeCloseTo(3738.43, 2);
     expect([c.connected, c.conv90]).toEqual([221, 98]);
   });
   it('drops calls with an unknown industry', () => {

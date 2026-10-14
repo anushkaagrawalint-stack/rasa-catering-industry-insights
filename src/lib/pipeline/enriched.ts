@@ -88,8 +88,8 @@ export function processEnriched(buf: Buffer | Uint8Array, cfg: AppConfig): Proce
     const date = parseDateCell(c[col(orders, 'order_date')]);
     if (!date) { noDate++; continue; }
     const value = numCell(c[col(orders, 'order_value')]) ?? 0;
-    // Tentative (Confirmed, not yet closed) and $0 orders are ignored.
-    if (value <= 0 || norm(str(c[col(orders, 'order_status')])) === 'confirmed') continue;
+    // $0 orders are ignored.
+    if (value <= 0) continue;
     let company = str(c[col(orders, 'company_name')]).replace(/\s+/g, ' ');
     const industryRaw = str(c[col(orders, 'industry')]);
     const personal = !company || isPersonalIndustry(industryRaw);

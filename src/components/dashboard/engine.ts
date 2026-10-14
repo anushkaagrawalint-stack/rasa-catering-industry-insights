@@ -3,7 +3,7 @@
 // destroy + rebuild every Chart.js chart on each render.
 import Chart, { type ActiveElement, type ChartConfiguration, type ChartEvent, type ChartType } from 'chart.js/auto';
 import {
-  NOCO, NOT_IN_DB_COMPANY, PERSONAS, STORE_TABLE_ORDER, STORES,
+  NO_STORE, NOCO, NOT_IN_DB_COMPANY, PERSONAS, STORE_TABLE_ORDER, STORES,
 } from '@/lib/constants';
 import { fmt, gapText, makeDisp, mmss, pc, pct, usd } from '@/lib/format';
 import { dialKpis, orderSummary, tvdRows } from '@/lib/metrics';
@@ -34,6 +34,22 @@ export function createDashboard(data: SnapshotData, abbrev: Record<string, strin
   const themeColors = () => {
     PAL = ['--c1', '--c2', '--c3', '--c4', '--c5', '--c6', '--c7', '--c8'].map(css);
     BRAND = css('--brand');
+  };
+  // Calls with no store on file are shared equally across the four stores (whole numbers; any remainder goes to the last stores).
+  const spread = (total: number) => STORES.map((_, i) => Math.floor(total / STORES.length) + (i >= STORES.length - (total % STORES.length) ? 1 : 0));
+  const allocated = (rs: DialRow[]): DialRow[] => {
+    const ns = rs.filter(r => r[6].includes(NO_STORE)).length;
+    if (!ns) return rs;
+    const counts = spread(ns);
+    let si = 0, left = counts[0];
+    return rs.map(r => {
+      if (!r[6].includes(NO_STORE)) return r;
+      while (left === 0) left = counts[++si];
+      left--;
+      const c = [...r] as DialRow;
+      c[6] = [STORES[si]];
+      return c;
+    });
   };
   const fil = () => (agent === 'all' ? R : R.filter(r => r[0] === agent));
   const uniq = (rows: DialRow[]) => new Set(rows.filter(r => r[7] >= 0).map(r => r[7])).size;
@@ -202,7 +218,7 @@ export function createDashboard(data: SnapshotData, abbrev: Record<string, strin
   }
 
   function stackedStore(id: string, cats: string[], labels: string[], colors: string[], keyf: (r: DialRow) => string, onpick: (st: string, ci: number) => void) {
-    const rows = fil();
+    const rows = allocated(fil());
     const ds = cats.map((cat, ci) => ({
       label: labels[ci],
       data: STORES.map(st => rows.filter(r => r[6].includes(st) && keyf(r) === cat).length),
@@ -286,20 +302,23 @@ export function createDashboard(data: SnapshotData, abbrev: Record<string, strin
     barH('cTitle', tt, k => k, PAL[0], d => showCalls(d.k + ' — companies dialled', CSUB, rows.filter(r => r[9] >= 0 && TI[r[9]] === d.k)));
     barH('cTopInd', indAll.slice(0, 12), disp, BRAND, d => showCalls(disp(d.k) + ' — companies dialled', CSUB, matched.filter(r => r[4] === d.k)));
 
+    const shared = rows.some(r => r[6].includes(NO_STORE)) ? '' : '';
+    $('cStoreNoteP').textContent = shared;
+    $('cStoreNoteI').textContent = shared;
     const P5 = ['Events', 'Office Manager / Admin', 'Executive Assistant', 'Chief of Staff', 'Admin Support'];
     const persCat = (r: DialRow) => (P5.includes(r[5]) ? r[5] : r[5] === 'No title on file' ? 'No title on file' : 'All other personas');
     const pcats = [...P5, 'All other personas', 'No title on file'];
     stackedStore('cStorePersona', pcats, pcats, [PAL[0], PAL[2], PAL[1], PBLUE, PAL[3], PAL[5], css('--muted')], persCat,
-      (st, ci) => showCalls(st + ' · ' + pcats[ci], CSUB, rows.filter(r => r[6].includes(st) && persCat(r) === pcats[ci])));
+      (st, ci) => showCalls(st + ' · ' + pcats[ci], CSUB, allocated(rows).filter(r => r[6].includes(st) && persCat(r) === pcats[ci])));
 
-    const stTag = rows.filter(r => r[6].some(s => (STORES as readonly string[]).includes(s)));
+    const stTag = allocated(rows).filter(r => r[6].some(s => (STORES as readonly string[]).includes(s)));
     const top6 = agg(stTag.filter(r => r[4]), r => r[4]).sort((a, b) => b.dials - a.dials).slice(0, 6).map(o => o.k);
     const indCat = (r: DialRow) => (!r[4] ? 'Unknown' : top6.includes(r[4]) ? r[4] : 'All other');
     const icats = [...top6, 'All other', 'Unknown'];
     const ilabels = icats.map(c => (c === 'All other' || c === 'Unknown' ? c : disp(c)));
     const icolors = [PAL[1], PAL[2], PAL[3], PBLUE, PAL[4], PAL[5]].slice(0, top6.length).concat([css('--ink-2'), css('--muted')]);
     stackedStore('cStoreIndustry', icats, ilabels, icolors, indCat,
-      (st, ci) => showCalls(st + ' · ' + ilabels[ci], CSUB, rows.filter(r => r[6].includes(st) && indCat(r) === icats[ci])));
+      (st, ci) => showCalls(st + ' · ' + ilabels[ci], CSUB, allocated(rows).filter(r => r[6].includes(st) && indCat(r) === icats[ci])));
   }
 
   // ---- 6.7 / 6.8 tables --------------------------------------------------------------------
@@ -307,17 +326,25 @@ export function createDashboard(data: SnapshotData, abbrev: Record<string, strin
     const rows = fil();
     const d = rows.length;
     const byk = Object.fromEntries(agg(rows, r => r[6]).map(o => [o.k, o]));
+    // Calls with no store on file are shared equally across the four stores (whole numbers; any remainder goes to the last stores).
+    const ns = byk[NO_STORE];
+    const extra = ns ? { dials: spread(ns.dials), contacts: spread(ns.contacts), c9: spread(ns.rows.filter(r => r[2]).length), cn: spread(ns.rows.filter(r => r[3]).length) } : null;
     let h = '<thead><tr><th>Store</th><th class="num">Dials</th><th class="num">Unique contacts</th><th class="num">Share of dials</th><th class="num">Calls &gt;90s</th><th class="num">Conv. rate</th></tr></thead><tbody>';
     let any = false;
     for (const s of STORE_TABLE_ORDER) {
+      if (s === NO_STORE && extra) continue;
       const o = byk[s];
-      if (!o) continue;
+      const si = (STORES as readonly string[]).indexOf(s);
+      if (!o && !(extra && si >= 0)) continue;
       any = true;
-      const c9 = o.rows.filter(r => r[2]).length, cn = o.rows.filter(r => r[3]).length;
-      h += `<tr class="click" tabindex="0" data-k="${encodeURIComponent(s)}"><td>${s}</td><td class="num">${fmt(o.dials)}</td><td class="num">${fmt(o.contacts)}</td><td class="num">${pct(pc(o.dials, d))}</td><td class="num">${fmt(c9)}</td><td class="num">${pct(pc(cn, o.dials))}</td></tr>`;
+      const add = extra && si >= 0 ? { d: extra.dials[si], u: extra.contacts[si], c9: extra.c9[si], cn: extra.cn[si] } : { d: 0, u: 0, c9: 0, cn: 0 };
+      const dials = (o?.dials ?? 0) + add.d;
+      const c9 = (o?.rows.filter(r => r[2]).length ?? 0) + add.c9, cn = (o?.rows.filter(r => r[3]).length ?? 0) + add.cn;
+      h += `<tr class="click" tabindex="0" data-k="${encodeURIComponent(s)}"><td>${s}</td><td class="num">${fmt(dials)}</td><td class="num">${fmt((o?.contacts ?? 0) + add.u)}</td><td class="num">${pct(pc(dials, d))}</td><td class="num">${fmt(c9)}</td><td class="num">${pct(pc(cn, dials))}</td></tr>`;
     }
     if (!any) h += `<tr><td colspan="6">${NO_DIALS}</td></tr>`;
     $('tStore').innerHTML = h + '</tbody>';
+    $('tStoreNote').textContent = extra ? '' : '';
   }
   function personaTbl() {
     const rows = fil();

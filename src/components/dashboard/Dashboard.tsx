@@ -102,12 +102,12 @@ export function Dashboard({ data, weeks, abbrev, isAdmin }: Props) {
         </div>
         <div className="grid2">
           <div className="panel"><h2>Dials by store — persona mix</h2><div className="hint">Store-tagged contacts · dual-tagged counted under each store</div>
-            <div className="chart-box"><canvas id="cStorePersona" role="img" aria-label="Dials by store and persona" /></div></div>
+            <div className="chart-box"><canvas id="cStorePersona" role="img" aria-label="Dials by store and persona" /></div><div className="hint" id="cStoreNoteP" /></div>
           <div className="panel"><h2>Dials by store — industry mix</h2><div className="hint">Store-tagged contacts · top 6 industries, rest grouped</div>
-            <div className="chart-box"><canvas id="cStoreIndustry" role="img" aria-label="Dials by store and industry" /></div></div>
+            <div className="chart-box"><canvas id="cStoreIndustry" role="img" aria-label="Dials by store and industry" /></div><div className="hint" id="cStoreNoteI" /></div>
         </div>
         <div className="panel"><h2>Store detail</h2><div className="hint">Which store each dial supports (contact&apos;s Store Location tag). Dual-tagged contacts count under each store, so rows can sum above the filtered total.</div>
-          <div className="tbl-wrap"><table id="tStore" /></div></div>
+          <div className="tbl-wrap"><table id="tStore" /></div><div className="hint" id="tStoreNote" /></div>
         <div className="panel"><h2>Persona detail</h2><div className="hint">Personas grouped from the exact job title.</div>
           <div className="tbl-wrap"><table id="tPersona" /></div></div>
 

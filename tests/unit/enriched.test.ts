@@ -22,7 +22,8 @@ describe('RASA_Dashboard_Data workbook', () => {
   });
   it('has the expected totals', () => {
     const c = r.data!.meta.counts;
-    expect([c.ytdOrders, c.personal, c.identified, c.dials, c.weekOrders]).toEqual([518, 77, 441, 2333, 11]);
+    expect([c.ytdOrders, c.personal, c.identified, c.dials, c.weekOrders]).toEqual([479, 73, 406, 2333, 6]);
+    expect(c.weekValue).toBeCloseTo(2789.52, 2);
     expect([c.connected, c.conv90]).toEqual([221, 98]);
   });
   it('drops calls with an unknown industry', () => {

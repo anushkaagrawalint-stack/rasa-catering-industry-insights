@@ -87,6 +87,9 @@ export function processEnriched(buf: Buffer | Uint8Array, cfg: AppConfig): Proce
     if (id) { if (seen.has(id)) { dup++; continue; } seen.add(id); }
     const date = parseDateCell(c[col(orders, 'order_date')]);
     if (!date) { noDate++; continue; }
+    const value = numCell(c[col(orders, 'order_value')]) ?? 0;
+    // Tentative (Confirmed, not yet closed) and $0 orders are ignored.
+    if (value <= 0 || norm(str(c[col(orders, 'order_status')])) === 'confirmed') continue;
     let company = str(c[col(orders, 'company_name')]).replace(/\s+/g, ' ');
     const industryRaw = str(c[col(orders, 'industry')]);
     const personal = !company || isPersonalIndustry(industryRaw);
@@ -97,7 +100,7 @@ export function processEnriched(buf: Buffer | Uint8Array, cfg: AppConfig): Proce
     }
     const store = str(c[col(orders, 'store_location')]);
     orderRows.push([
-      company, personal ? '' : industryRaw.toLowerCase(), numCell(c[col(orders, 'order_value')]) ?? 0, 0,
+      company, personal ? '' : industryRaw.toLowerCase(), value, 0,
       derive.location(store), date.slice(0, 7), personal ? 'Personal' : 'Industry', store ? locRaw.idx(store) : -1, date,
     ]);
   }
@@ -155,5 +158,6 @@ export function processEnriched(buf: Buffer | Uint8Array, cfg: AppConfig): Proce
   if (noDate) warnings.push({ code: 'bad_dates', title: 'Orders without a readable date', message: `${noDate} order(s) skipped.` });
   const ud = unknownDispositionsIssue(data, derive);
   if (ud) warnings.push(ud);
-  return { errors, warnings: [...warnings, ...applyWeek(data, detected)], data };
+  const weekWarnings = applyWeek(data, detected);
+  return { errors, warnings: [...warnings, ...weekWarnings], data };
 }

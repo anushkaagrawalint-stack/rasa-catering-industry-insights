@@ -223,12 +223,12 @@ export function createDashboard(data: SnapshotData, abbrev: Record<string, strin
   function kpis() {
     const k = dialKpis(fil());
     const items = [
-      { v: fmt(k.dials), l: 'Total dials', n: 'across ' + (agent === 'all' ? AG.length : 1) + ' agent' + (agent === 'all' && AG.length > 1 ? 's' : '') },
-      { v: fmt(k.unique), l: 'Unique contacts dialled', n: fmt(k.repeat) + ' repeat attempts' },
-      { v: fmt(k.conv90), l: 'Conversations (>90 sec)', n: pct(k.convPct) + ' of connected calls' },
-      { v: fmt(k.connected), l: 'Connected', n: pct(k.connPct) + ' of dials' },
+      { v: fmt(k.dials), l: "This week's total dials", n: '' },
+      { v: fmt(k.unique), l: "This week's unique contacts dialled", n: fmt(k.repeat) + ' repeat attempts' },
+      { v: fmt(k.conv90), l: "This week's conversations (>90 sec)", n: pct(k.convPct) + ' of connected calls' },
+      { v: fmt(k.connected), l: "This week's connected calls", n: pct(k.connPct) + ' of dials' },
     ];
-    $('kpis').innerHTML = items.map(i => `<div class="kpi"><div class="v">${i.v}</div><div class="l">${esc(i.l)}</div><div class="n">${i.n}</div></div>`).join('');
+    $('kpis').innerHTML = items.map(i => `<div class="kpi"><div class="v">${i.v}</div><div class="l">${esc(i.l)}</div>${i.n ? `<div class="n">${i.n}</div>` : ''}</div>`).join('');
   }
 
   // ---- 6.3 Targeting vs demand ---------------------------------------------------------------

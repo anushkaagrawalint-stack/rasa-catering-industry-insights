@@ -30,6 +30,9 @@ const PERSONA_MAP: Record<string, string> = {
   unknown: 'No title on file',
   'no contact match': 'Not in database',
 };
+/** All education industries are one category. */
+const EDUCATION = new Set(['higher education', 'k-12 education', 'education services & training']);
+const industryKey = (raw: string) => (EDUCATION.has(norm(raw)) ? 'education' : raw.trim().toLowerCase());
 const isUnknown = (s: string) => !s.trim() || norm(s) === 'unknown';
 const isPersonalIndustry = (s: string) => /^personal\b/i.test(s.trim()) || /^unclassified/i.test(s.trim()) || /^no company/i.test(s.trim());
 
@@ -100,7 +103,7 @@ export function processEnriched(buf: Buffer | Uint8Array, cfg: AppConfig): Proce
     }
     const store = str(c[col(orders, 'store_location')]);
     orderRows.push([
-      company, personal ? '' : industryRaw.toLowerCase(), value, 0,
+      company, personal ? '' : industryKey(industryRaw), value, 0,
       derive.location(store), date.slice(0, 7), personal ? 'Personal' : 'Industry', store ? locRaw.idx(store) : -1, date,
     ]);
   }
@@ -132,7 +135,7 @@ export function processEnriched(buf: Buffer | Uint8Array, cfg: AppConfig): Proce
     if (d) callDateCounts[d] = (callDateCounts[d] ?? 0) + 1;
     const connected = derive.connected(disp);
     dialRows.push([
-      0, 1, connected && dur > 90 ? 1 : 0, connected, indRaw.toLowerCase(), persona,
+      0, 1, connected && dur > 90 ? 1 : 0, connected, industryKey(indRaw), persona,
       derive.stores(storeStr, true, unknownStoreParts), contact ? contacts.idx(contact) : -1, dur, title ? titles.idx(title) : -1,
       companies.idx(companyRaw || NO_COMPANY_NAME), dispositions.idx(disp), storeStr ? storeRaw.idx(storeStr) : -1,
     ]);

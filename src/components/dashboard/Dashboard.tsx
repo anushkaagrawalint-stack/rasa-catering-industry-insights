@@ -61,11 +61,6 @@ export function Dashboard({ data, weeks, abbrev, isAdmin }: Props) {
             <select id="week" value={m.weekStart} onChange={e => router.push(`/?week=${e.target.value}`)}>
               {weeks.map(w => <option key={w} value={w}>{weekShortLabel(w)}</option>)}
             </select>
-            <label htmlFor="agent" style={{ fontSize: 12, color: 'var(--ink-2)' }}>Agent</label>
-            <select id="agent" value={agent === 'all' ? 'all' : agentName} onChange={e => setAgentName(e.target.value)}>
-              <option value="all">All agents</option>
-              {data.agents.map(a => <option key={a} value={a}>{a}</option>)}
-            </select>
             <button className="themebtn" id="theme" onClick={toggleTheme} aria-label="Toggle light / dark theme">◐</button>
             {isAdmin && <a className="btn" href="/admin">Admin</a>}
             <button className="btn" onClick={logout}>Log out</button>
@@ -75,7 +70,7 @@ export function Dashboard({ data, weeks, abbrev, isAdmin }: Props) {
 
         <div className="panel" style={{ borderTop: '3px solid var(--accent)' }}>
           <h2 style={{ fontSize: 16 }}>This week&apos;s orders only · {weekRange}</h2>
-          <div className="hint">Catering orders placed this week — the same week as the dials above (independent of the agent filter).</div>
+          <div className="hint">Catering orders placed this week — the same week as the dials above.</div>
           <div className="kpis" id="kWeek" style={{ marginTop: 12 }} />
           <div className="grid2" style={{ marginTop: 4 }}>
             <div className="panel" style={{ boxShadow: 'none' }}><h2>This week&apos;s order value by industry</h2><div className="hint">By $ · click a bar for the company breakdown · $0 orders ignored in the Individuals bar</div>

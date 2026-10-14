@@ -40,4 +40,10 @@ describe('RASA_Dashboard_Data workbook', () => {
       'Admin Support': 125, 'HR / People Ops': 63, Events: 49, Other: 25, 'Leadership / Director': 6,
     });
   });
+  it('puts all education industries in one category', () => {
+    const d = r.data!;
+    const all = [...d.orders.map(o => o[1]), ...d.dials.map(x => x[4])];
+    expect(all.some(i => /higher education|k-12|education services/.test(i))).toBe(false);
+    expect(d.orders.some(o => o[1] === 'education') && d.dials.some(x => x[4] === 'education')).toBe(true);
+  });
 });

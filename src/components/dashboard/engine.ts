@@ -11,7 +11,7 @@ import type { DialRow, OrderRow, SnapshotData } from '@/lib/pipeline/types';
 
 const TEAL = '#2BA5B5';
 const PBLUE = '#4C6EDB';
-const CSUB = "This week's dials · agent filter applies";
+const CSUB = "This week's dials";
 const NO_DIALS = 'No dials for this selection';
 
 const css = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -137,7 +137,7 @@ export function createDashboard(data: SnapshotData, abbrev: Record<string, strin
   function tvdDrill(ind: string) {
     const o = orderCompanies(x => x[1] === ind);
     const cr = callCompanies(fil().filter(r => r[1] && r[4] === ind));
-    openDrawer(disp(ind) + ' — orders vs dials', 'Orders: YTD · Dials: this week (agent filter applies)', [
+    openDrawer(disp(ind) + ' — orders vs dials', 'Orders: YTD · Dials: this week', [
       { h: 'Companies that ordered (YTD) · ' + o.rows.length, cols: ORDCOLS, rows: o.rows, total: o.total },
       { h: 'Companies dialled (this week) · ' + cr.rows.length, cols: CALLCOLS, rows: cr.rows, total: cr.total },
     ]);

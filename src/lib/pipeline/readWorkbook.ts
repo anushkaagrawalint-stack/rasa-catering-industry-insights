@@ -45,14 +45,14 @@ function toTable(name: string, ws: XLSX.WorkSheet): Table {
  * Parse only the tabs the dashboard needs. Tab names are matched exactly after trimming;
  * the JustCall tab and Phone Number are detected but not parsed (kept only in the audit file).
  */
-export function readWorkbook(buf: Buffer | Uint8Array): RawWorkbook {
+export function readWorkbook(buf: Buffer | Uint8Array, wantedTabs: string[] = [TAB_SUMMARY, TAB_ORDERS, TAB_CALLS, TAB_TOAST]): RawWorkbook {
   const base = { type: 'buffer' as const, cellFormula: false, cellHTML: false, cellText: false, cellDates: false, dense: true };
   const names = XLSX.read(buf, { ...base, bookSheets: true }).SheetNames;
   const tabs = new Map<string, string>();
   for (const n of names) if (!tabs.has(n.trim())) tabs.set(n.trim(), n);
   const jcTab = names.find(n => n.trim().startsWith(JC_PREFIX)) ?? null;
 
-  const wanted = [TAB_SUMMARY, TAB_ORDERS, TAB_CALLS, TAB_TOAST].map(t => tabs.get(t)).filter((n): n is string => !!n);
+  const wanted = wantedTabs.map(t => tabs.get(t)).filter((n): n is string => !!n);
   const tables = new Map<string, Table>();
   if (wanted.length) {
     const wb = XLSX.read(buf, { ...base, sheets: wanted });

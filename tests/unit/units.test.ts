@@ -61,8 +61,8 @@ describe('store keyword mapping (4.3)', () => {
 
 describe('disposition mapping (4.3)', () => {
   it('uses the default connected list', () => {
-    for (const v of ['MQL', 'MQL Follow-Up', 'Meeting Set', 'Interested/FUP', 'Interested But Follow Up Needed', 'Call Back Later', 'Not Interested', 'Wrong Number', 'Do Not Call Again']) expect(d.connected(v)).toBe(1);
-    for (const v of ['Left Voicemail', 'No Answer', 'Bad Number', '']) expect(d.connected(v)).toBe(0);
+    for (const v of ['MQL', 'MQL Follow-Up', 'Interested/FUP', 'Interested But Follow Up Needed', 'Call Back Later', 'Not Interested', 'Wrong Number', 'Do Not Call Again']) expect(d.connected(v)).toBe(1);
+    for (const v of ['Left Voicemail', 'No Answer', 'Bad Number', 'Meeting Set', 'Send an Email', '']) expect(d.connected(v)).toBe(0);
     expect(d.connected('not interested')).toBe(1);
     expect(d.isKnownDisposition('Busy')).toBe(false);
     expect(d.connected('Busy')).toBe(0);

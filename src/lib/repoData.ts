@@ -2,6 +2,7 @@ import 'server-only';
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { abbrevMap, DEFAULT_CONFIG } from './config';
+import { isEnrichedWorkbook, processEnriched } from './pipeline/enriched';
 import { processWorkbook } from './pipeline/process';
 import type { SnapshotData } from './pipeline/types';
 
@@ -16,7 +17,8 @@ function load(): Map<string, SnapshotData> {
   if (cache) return cache;
   const weeks = new Map<string, SnapshotData>();
   for (const file of readdirSync(DATA_DIR).filter(f => f.toLowerCase().endsWith('.xlsx') && !f.startsWith('~$')).sort()) {
-    const r = processWorkbook(readFileSync(path.join(DATA_DIR, file)), DEFAULT_CONFIG);
+    const buf = readFileSync(path.join(DATA_DIR, file));
+    const r = isEnrichedWorkbook(buf) ? processEnriched(buf, DEFAULT_CONFIG) : processWorkbook(buf, DEFAULT_CONFIG);
     if (r.errors.length || !r.data) {
       console.error(`data/${file}: skipped — ${r.errors.map(e => e.message).join('; ')}`);
       continue;

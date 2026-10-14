@@ -26,6 +26,7 @@ const failures = new Map<string, number[]>();
 
 /** Failed-attempt rate limit, kept in memory. It is per server instance, so it slows guessing but is not a hard global limit. */
 export async function isRateLimited(bucket: string): Promise<boolean> {
+  if (process.env.NODE_ENV !== 'production') return false; // no lockout while developing locally
   const recent = (failures.get(bucket) ?? []).filter(t => Date.now() - t < WINDOW_MS);
   if (recent.length) failures.set(bucket, recent); else failures.delete(bucket);
   return recent.length >= MAX_FAILS;

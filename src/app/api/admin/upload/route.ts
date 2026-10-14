@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getAdmin, unauthorized } from '@/lib/auth';
 import { DEFAULT_CONFIG } from '@/lib/config';
 import { commitFile } from '@/lib/github';
+import { isEnrichedWorkbook, processEnriched } from '@/lib/pipeline/enriched';
 import { processWorkbook } from '@/lib/pipeline/process';
 
 // Vercel caps a function request body at about 4.5 MB.
@@ -20,7 +21,7 @@ export async function POST(req: Request) {
   if (file.size > MAX_BYTES) return bad('File is larger than 4 MB, the most Vercel accepts in one upload. Add it to the data folder on GitHub instead.', 413);
 
   const buf = Buffer.from(await file.arrayBuffer());
-  const result = processWorkbook(buf, DEFAULT_CONFIG);
+  const result = isEnrichedWorkbook(buf) ? processEnriched(buf, DEFAULT_CONFIG) : processWorkbook(buf, DEFAULT_CONFIG);
   if (result.errors.length || !result.data) {
     return NextResponse.json({ ok: false, error: 'The workbook has errors, so it was not saved.', errors: result.errors.map(e => e.message), warnings: result.warnings.map(w => w.message) });
   }

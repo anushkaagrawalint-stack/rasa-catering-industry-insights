@@ -17,10 +17,13 @@ export const CONFIG_KEYS: ConfigKey[] = ['dispositions', 'industryAbbrev', 'loca
 
 export const DEFAULT_CONFIG: AppConfig = {
   dispositions: [
-    ...['MQL', 'MQL Follow-Up', 'Meeting Set', 'Interested/FUP', 'Interested But Follow Up Needed', 'Call Back Later',
-      'Not Interested', 'Wrong Number', 'Do Not Call Again'].map(value => ({ value, connected: true })),
-    ...['Left Voicemail', 'No Answer', 'Bad Number'].map(value => ({ value, connected: false })),
+    // Connected = a live conversation: exactly these dispositions (plus their spelling variants). Everything else is not connected.
+    ...['MQL', 'MQL Follow-Up', 'Interested/FUP', 'Interested – Follow Up', 'Interested, FUP Needed', 'Interested But Follow Up Needed',
+      'Call Back Later', 'Not Interested', 'Wrong Number', 'Wrong / Bad Number', 'Do Not Call Again'].map(value => ({ value, connected: true })),
+    ...['Left Voicemail', 'No Answer', 'Bad Number', 'No Disposition', 'Redial', 'Send an Email', 'Wrong Contact', 'Hung Up Midway',
+      'Cooldown Needed', 'Connected', 'No Events', 'Gave Referral', 'Will Revert', 'Meeting Set'].map(value => ({ value, connected: false })),
   ],
+
   industryAbbrev: [
     { key: 'information technology & services', label: 'IT & Services' },
     { key: 'nonprofit organization management', label: 'Nonprofit Org Management' },
@@ -33,12 +36,14 @@ export const DEFAULT_CONFIG: AppConfig = {
   locationMap: [
     { source: 'Mt Vernon Triangle', label: STORE_MVT },
     { source: 'Ballpark', label: STORE_MVT },
+    { source: 'Ballpark (Navy Yard)', label: STORE_MVT },
     { source: 'Rockville', label: STORE_ROCK },
     { source: 'National Landing', label: STORE_NL },
     { source: 'Mosaic District', label: STORE_MOSAIC },
   ],
   storeKeywords: [
     { keyword: 'Mount Vernon', label: STORE_MVT },
+    { keyword: 'Mt Vernon', label: STORE_MVT },
     { keyword: 'Navy Yard', label: STORE_MVT },
     { keyword: 'Ballpark', label: STORE_MVT },
     { keyword: 'Arlington', label: STORE_NL },

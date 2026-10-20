@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_CONFIG } from '@/lib/config';
@@ -6,7 +6,7 @@ import { isEnrichedWorkbook, processEnriched } from '@/lib/pipeline/enriched';
 import { orderSummary } from '@/lib/metrics';
 
 const dataDir = path.resolve(__dirname, '../../data');
-const buf = readFileSync(path.join(dataDir, readdirSync(dataDir).filter(f => f.endsWith('.xlsx')).sort()[0]));
+const buf = readFileSync(path.join(dataDir, 'week-2026-10-05.xlsx'));
 const r = processEnriched(buf, DEFAULT_CONFIG);
 
 describe('RASA_Dashboard_Data workbook', () => {
@@ -45,5 +45,17 @@ describe('RASA_Dashboard_Data workbook', () => {
     const all = [...d.orders.map(o => o[1]), ...d.dials.map(x => x[4])];
     expect(all.some(i => /higher education|k-12|education services/.test(i))).toBe(false);
     expect(d.orders.some(o => o[1] === 'education') && d.dials.some(x => x[4] === 'education')).toBe(true);
+  });
+});
+
+describe('week of Oct 12 workbook', () => {
+  const w2 = processEnriched(readFileSync(path.join(dataDir, 'week-2026-10-12.xlsx')), DEFAULT_CONFIG);
+  it('parses and has the expected totals', () => {
+    expect(w2.errors).toEqual([]);
+    const d = w2.data!;
+    expect([d.meta.weekStart, d.meta.weekEnd]).toEqual(['2026-10-12', '2026-10-18']);
+    const c = d.meta.counts;
+    expect([c.ytdOrders, c.weekOrders, c.dials, c.connected, c.conv90]).toEqual([510, 12, 2866, 331, 122]);
+    expect(c.weekValue).toBeCloseTo(7310.57, 2);
   });
 });

@@ -23,7 +23,7 @@ describe('RASA_Dashboard_Data workbook', () => {
   });
   it('has the expected totals', () => {
     const c = r.data!.meta.counts;
-    expect([c.ytdOrders, c.personal, c.identified, c.dials, c.weekOrders]).toEqual([497, 76, 421, 2333, 7]);
+    expect([c.ytdOrders, c.personal, c.identified, c.dials, c.weekOrders]).toEqual([495, 76, 419, 2333, 7]);
     expect(c.weekValue).toBeCloseTo(3738.43, 2);
     expect([c.connected, c.conv90]).toEqual([221, 98]);
   });
@@ -55,7 +55,7 @@ describe('week of Oct 12 workbook', () => {
     const d = w2.data!;
     expect([d.meta.weekStart, d.meta.weekEnd]).toEqual(['2026-10-12', '2026-10-18']);
     const c = d.meta.counts;
-    expect([c.ytdOrders, c.weekOrders, c.dials, c.connected, c.conv90]).toEqual([510, 12, 2866, 331, 122]);
+    expect([c.ytdOrders, c.weekOrders, c.dials, c.connected, c.conv90]).toEqual([508, 12, 2866, 331, 122]);
     expect(c.weekValue).toBeCloseTo(7310.57, 2);
   });
 });

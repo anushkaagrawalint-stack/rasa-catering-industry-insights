@@ -33,6 +33,7 @@ const PERSONA_MAP: Record<string, string> = {
 /** All education industries are one category. */
 const EDUCATION = new Set(['higher education', 'k-12 education', 'education services & training']);
 const industryKey = (raw: string) => (EDUCATION.has(norm(raw)) ? 'education' : raw.trim().toLowerCase());
+const INTERNAL_INDUSTRY = 'rasa internal / test';
 const isUnknown = (s: string) => !s.trim() || norm(s) === 'unknown';
 const isPersonalIndustry = (s: string) => /^personal\b/i.test(s.trim()) || /^unclassified/i.test(s.trim()) || /^no company/i.test(s.trim());
 
@@ -92,7 +93,7 @@ export function processEnriched(buf: Buffer | Uint8Array, cfg: AppConfig): Proce
     if (!date) { noDate++; continue; }
     const value = numCell(c[col(orders, 'order_value')]) ?? 0;
     // $0 orders are ignored.
-    if (value <= 0) continue;
+    if (value <= 0 || norm(str(c[col(orders, 'industry')])) === INTERNAL_INDUSTRY) continue;
     let company = str(c[col(orders, 'company_name')]).replace(/\s+/g, ' ');
     const industryRaw = str(c[col(orders, 'industry')]);
     const personal = !company || isPersonalIndustry(industryRaw);

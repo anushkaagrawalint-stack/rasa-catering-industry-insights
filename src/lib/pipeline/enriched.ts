@@ -121,7 +121,7 @@ export function processEnriched(buf: Buffer | Uint8Array, cfg: AppConfig): Proce
   for (const r of calls.rows) {
     const c = r.cells;
     const indRaw = str(c[col(calls, 'industry')]);
-    if (isUnknown(indRaw)) continue;
+    if (isUnknown(indRaw) || norm(str(c[col(calls, 'industry_tag')])) === 'no industry known') continue;
     const companyRaw = str(c[col(calls, 'company_name')]).replace(/\s+/g, ' ');
     const dur = numCell(c[col(calls, 'duration_sec')]) ?? 0;
     const disp = str(c[col(calls, 'disposition')]) || NO_ANSWER;

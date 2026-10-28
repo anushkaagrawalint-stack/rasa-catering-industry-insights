@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { UploadForm } from '@/components/UploadForm';
+import { WeekManager } from '@/components/WeekManager';
 import { getAdmin } from '@/lib/auth';
 import { listWeeks } from '@/lib/repoData';
 import { weekShortLabel } from '@/lib/pipeline/dates';
@@ -18,8 +19,7 @@ export default async function AdminPage() {
         <a className="btn" href="/">Dashboard</a>
       </header>
       <UploadForm />
-      <div className="panel"><h2>Weeks on the dashboard</h2>
-        <div className="hint">{weeks.length ? weeks.map(weekShortLabel).join(' · ') : 'None yet.'}</div></div>
+      <WeekManager weeks={weeks.map(w => ({ weekStart: w, label: weekShortLabel(w) }))} />
       <div className="foot">Prepared by Kutlerri for RASA | Confidential</div>
     </div>
   );

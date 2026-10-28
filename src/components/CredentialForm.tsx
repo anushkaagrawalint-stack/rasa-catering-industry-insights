@@ -15,17 +15,21 @@ export function CredentialForm({ next = '/' }: { next?: string }) {
     e.preventDefault();
     setBusy(true);
     setError('');
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-    setBusy(false);
-    if (res.ok) {
-      window.location.assign(next);
-      return;
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      if (res.ok) {
+        window.location.assign(next);
+        return;
+      }
+      setError(((await res.json().catch(() => ({}))) as { error?: string }).error ?? `Sign-in failed (server error ${res.status}).`);
+    } catch {
+      setError('Could not reach the server. Check your connection and try again.');
     }
-    setError(((await res.json().catch(() => ({}))) as { error?: string }).error ?? 'Sign-in failed.');
+    setBusy(false);
   }
 
   return (

@@ -15,7 +15,9 @@ export async function POST(req: Request) {
   const admin = await getAdmin();
   if (!admin) return unauthorized();
 
-  const file = (await req.formData().catch(() => null))?.get('file');
+  const form = await req.formData().catch(() => null);
+  const file = form?.get('file');
+  const replaceWeek = form?.get('replaceWeek');
   if (!(file instanceof File)) return bad('No file received.');
   if (!file.name.toLowerCase().endsWith('.xlsx')) return bad('Only .xlsx files are accepted.');
   if (file.size > MAX_BYTES) return bad('File is larger than 4 MB, the most Vercel accepts in one upload. Add it to the data folder on GitHub instead.', 413);
@@ -27,6 +29,9 @@ export async function POST(req: Request) {
   }
 
   const { weekStart, weekEnd } = result.data.meta;
+  if (typeof replaceWeek === 'string' && replaceWeek && replaceWeek !== weekStart) {
+    return bad(`This workbook is for the week of ${weekStart}, not ${replaceWeek}, so it was not saved. Use the main upload form to add a new week.`);
+  }
   try {
     await commitFile(`data/week-${weekStart}.xlsx`, buf, `Add weekly data for ${weekStart} (uploaded by ${admin.name})`);
   } catch (e) {

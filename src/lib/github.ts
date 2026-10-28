@@ -27,3 +27,21 @@ export async function commitFile(filePath: string, content: Buffer, message: str
     throw new Error(`GitHub rejected the commit (${res.status}) ${detail}`.trim());
   }
 }
+
+/** Removes a file from the deploy branch; the commit triggers a Vercel redeploy. Returns false if it was not there. */
+export async function deleteFile(filePath: string, message: string): Promise<boolean> {
+  const existing = await gh(`${filePath}?ref=${BRANCH}`);
+  if (existing.status === 404) return false;
+  if (!existing.ok) throw new Error(`GitHub lookup failed (${existing.status}).`);
+  const { sha } = (await existing.json()) as { sha: string };
+  const res = await gh(filePath, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, sha, branch: BRANCH }),
+  });
+  if (!res.ok) {
+    const detail = ((await res.json().catch(() => ({}))) as { message?: string }).message ?? '';
+    throw new Error(`GitHub rejected the delete (${res.status}) ${detail}`.trim());
+  }
+  return true;
+}

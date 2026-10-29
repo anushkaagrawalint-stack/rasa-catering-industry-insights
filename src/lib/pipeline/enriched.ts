@@ -134,7 +134,10 @@ export function processEnriched(buf: Buffer | Uint8Array, cfg: AppConfig): Proce
     const contact = contactDigits(c[col(calls, 'contact_number')]);
     const d = parseDateCell(c[col(calls, 'call_date')]);
     if (d) callDateCounts[d] = (callDateCounts[d] ?? 0) + 1;
-    const connected = derive.connected(disp);
+    const connCell = str(c[col(calls, 'is_connected')]).trim().toLowerCase();
+    const connected: 0 | 1 = detected >= '2026-10-19' && col(calls, 'is_connected') >= 0
+      ? (['1', 'true', 'yes', 'y', 'connected'].includes(connCell) ? 1 : 0)
+      : derive.connected(disp);
     dialRows.push([
       0, 1, connected && dur > 90 ? 1 : 0, connected, industryKey(indRaw), persona,
       derive.stores(storeStr, true, unknownStoreParts), contact ? contacts.idx(contact) : -1, dur, title ? titles.idx(title) : -1,

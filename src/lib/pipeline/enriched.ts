@@ -89,7 +89,8 @@ export function processEnriched(buf: Buffer | Uint8Array, cfg: AppConfig): Proce
     const c = r.cells;
     const id = str(c[col(orders, 'order_id')]);
     if (id) { if (seen.has(id)) { dup++; continue; } seen.add(id); }
-    const date = parseDateCell(c[col(orders, 'order_date')]);
+    const useReporting = detected >= '2026-10-19' && col(orders, 'reporting_date') >= 0;
+    const date = parseDateCell(c[col(orders, useReporting ? 'reporting_date' : 'order_date')]);
     if (!date) { noDate++; continue; }
     const value = numCell(c[col(orders, 'order_value')]) ?? 0;
     // $0 orders are ignored.

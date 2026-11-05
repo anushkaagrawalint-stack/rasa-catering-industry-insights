@@ -93,8 +93,8 @@ export function processEnriched(buf: Buffer | Uint8Array, cfg: AppConfig): Proce
     const date = parseDateCell(c[col(orders, useReporting ? 'reporting_date' : 'order_date')]);
     if (!date) { noDate++; continue; }
     const value = numCell(c[col(orders, 'order_value')]) ?? 0;
-    // $0 orders are ignored.
-    if (value <= 0 || norm(str(c[col(orders, 'industry')])) === INTERNAL_INDUSTRY) continue;
+    // $0 orders are counted; negative values are ignored.
+    if (value < 0 || norm(str(c[col(orders, 'industry')])) === INTERNAL_INDUSTRY) continue;
     let company = str(c[col(orders, 'company_name')]).replace(/\s+/g, ' ');
     const industryRaw = str(c[col(orders, 'industry')]);
     const personal = !company || isPersonalIndustry(industryRaw);
